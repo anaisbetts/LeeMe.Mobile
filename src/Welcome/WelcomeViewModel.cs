@@ -14,6 +14,10 @@ namespace LeeMe.Android
         {
             TakeNewPhoto = new ReactiveAsyncCommand();
             ChooseExistingPhoto = new ReactiveAsyncCommand();
+
+            // TODO: Write a proper UserError handler for this
+            TakeNewPhoto.ThrownExceptions.Subscribe(ex => Console.WriteLine(ex));
+            ChooseExistingPhoto.ThrownExceptions.Subscribe(ex => Console.WriteLine(ex));
         }
     }
 }
