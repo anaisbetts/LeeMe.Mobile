@@ -49,8 +49,10 @@ namespace LeeMe.Android
                     ViewModel.TakeNewPhoto.RegisterAsyncTask(_ => picker.TakePhotoAsync(defaultCamera)),
                     ViewModel.ChooseExistingPhoto.RegisterAsyncTask(_ => picker.PickPhotoAsync()))
                 .Subscribe(x => {
-                    Console.WriteLine(x.Path);
-                    StartActivity(typeof(EditActivity));
+                    var intent = new Intent(this, typeof(EditActivity));
+
+                    intent.PutExtra("imagePath", x.Path);
+                    StartActivity(intent);
                 });
         }
 

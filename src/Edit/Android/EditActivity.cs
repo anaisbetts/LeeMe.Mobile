@@ -15,11 +15,12 @@ using ReactiveUI.Android;
 using Android.Graphics;
 using System.Reactive.Linq;
 using System.IO;
+using ActionbarSherlock.App;
 
 namespace LeeMe.Android
 {
     [Activity (Label = "EditActivity")]            
-    public class EditActivity : Activity, IViewFor<EditViewModel>, INotifyPropertyChanged
+    public class EditActivity : SherlockActivity, IViewFor<EditViewModel>, INotifyPropertyChanged
     {
         protected override void OnCreate(Bundle bundle)
         {
@@ -29,14 +30,15 @@ namespace LeeMe.Android
             ViewModel = new EditViewModel(x => 
                 Observable.Start(() => BitmapFactory.DecodeFile(x), RxApp.TaskpoolScheduler));
 
-            var targetFile = (bundle ?? new Bundle()).GetString("imagePath");
+            var targetFile = Intent.GetStringExtra("imagePath");
             if (targetFile == null || !File.Exists(targetFile)) {
                 var intent = new Intent(this, typeof(WelcomeActivity));
                 intent.AddFlags(ActivityFlags.ClearTop);
                 StartActivity(intent);
             }
 
-            SetContentView(Resource.Layout.Edit);
+            SupportActionBar.Title = "Get Turnt";
+            SupportActionBar.SetIcon(Resource.Drawable.Icon);
         }
         
         #region Boring copy-paste code I want to die
