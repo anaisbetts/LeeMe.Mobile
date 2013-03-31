@@ -50,6 +50,7 @@ namespace LeeMe.Android
                     ViewModel.ChooseExistingPhoto.RegisterAsyncTask(_ => picker.PickPhotoAsync()))
                 .Subscribe(x => {
                     Console.WriteLine(x.Path);
+                    StartActivity(typeof(EditActivity));
                 });
         }
 
