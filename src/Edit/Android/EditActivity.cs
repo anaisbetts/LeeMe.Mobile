@@ -45,7 +45,13 @@ namespace LeeMe.Android
 
             ViewModel.LoadImage.Execute(targetFile);
 
-            SetContentView(new EditView(this));
+            var view = new EditView(this);
+            ViewModel.Changed.Subscribe(_ => view.Invalidate());
+
+            // XXX: Debug
+            Observable.Timer(DateTimeOffset.MinValue, TimeSpan.FromSeconds(5.0f), RxApp.DeferredScheduler).Subscribe(_ => view.Invalidate());
+
+            SetContentView(view);
         }
 
         class EditView : View
@@ -76,8 +82,35 @@ namespace LeeMe.Android
                 var scaleFactor = (canvas.Width / 2.0) / (double)width;
                 int scaledHeight = (int)(height * scaleFactor);
 
+                // XXX: Debug
                 canvas.DrawRect(new Rect(0, (int)startTop, imageCanvasHeight, imageCanvasHeight + (int)startTop),
                                 new Paint() { Color = Color.AliceBlue, StrokeWidth = 2 });
+
+                if (activity.ViewModel.LoadedImage != null) {
+                    var img = activity.ViewModel.LoadedImage.ToNative();
+                    var imgHeight = img.GetScaledHeight(canvas);
+                    var imgWidth = img.GetScaledWidth(canvas);
+
+                    var longSide = Math.Max(imgHeight, imgWidth);
+                    var imgScaleFactor = canvas.Width / longSide;
+                    var scaledImgHeight = imgHeight * imgScaleFactor;
+                    var scaledImgWidth = imgWidth * imgScaleFactor;
+
+                    if (imgHeight > imgWidth) {
+                        var imgLeft = (canvas.Width - scaledImgWidth) / 2.0f;
+                        canvas.DrawBitmap(img,
+                            new Rect(0, 0, imgWidth, imgHeight),
+                            new Rect((int)imgLeft, (int)startTop, (int)(imgLeft + scaledImgWidth), (int)startTop + imageCanvasHeight),
+                            defaultPaint);
+                    } else {
+                        var imgTop = (imageCanvasHeight - scaledImgHeight) / 2.0f;
+
+                        canvas.DrawBitmap(img,
+                            new Rect(0, 0, imgWidth, imgHeight),
+                            new Rect(0, (int)imgTop + (int)startTop, canvas.Width, (int)imgTop + scaledImgHeight + (int)startTop),
+                            defaultPaint);
+                    }
+                }
 
                 canvas.DrawBitmap(activity.datLee, 
                     new Rect(0, 0, width, height),
