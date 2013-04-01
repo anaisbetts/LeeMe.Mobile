@@ -16,12 +16,12 @@ namespace LeeMe.Android
 
         public ReactiveAsyncCommand LoadImage { get; protected set; }
 
-        ObservableAsPropertyHelper<object> _LoadedImage;
-        public object LoadedImage {
+        ObservableAsPropertyHelper<IBitmap> _LoadedImage;
+        public IBitmap LoadedImage {
             get { return _LoadedImage.Value; }
         }
 
-        public EditViewModel(Func<string, IObservable<object>> imageLoaderFunc)
+        public EditViewModel()
         {
             LoadImage = new ReactiveAsyncCommand();
 
@@ -29,7 +29,7 @@ namespace LeeMe.Android
                 .Where(x => !String.IsNullOrWhiteSpace(x) && File.Exists(x))
                 .InvokeCommand(LoadImage);
 
-            LoadImage.RegisterAsyncObservable(x => imageLoaderFunc((string)x))
+            LoadImage.RegisterAsyncTask(x => BitmapLoader.Current.Load(File.OpenRead((string)x)))
                 .ToProperty(this, x => x.LoadedImage);
         }
     }

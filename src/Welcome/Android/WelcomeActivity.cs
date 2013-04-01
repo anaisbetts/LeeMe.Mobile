@@ -23,7 +23,8 @@ namespace LeeMe.Android
             base.OnCreate(bundle);
             RxApp.DeferredScheduler = new AndroidUIScheduler(this);
 
-            ViewModel = new WelcomeViewModel();
+            var picker = new MediaPicker(this);
+            ViewModel = new WelcomeViewModel(picker);
 
             SetContentView(Resource.Layout.Welcome);
 
@@ -39,21 +40,15 @@ namespace LeeMe.Android
                 }
             };
 
-            var defaultCamera = new StoreCameraMediaOptions() { DefaultCamera = CameraDevice.Rear, Directory = "LeeMe", Name = "turnt.jpg", };
-            var picker = new MediaPicker(this);
-
             SupportActionBar.Title = "Lee Me";
             SupportActionBar.SetIcon(Resource.Drawable.Icon);
 
-            Observable.Merge(
-                    ViewModel.TakeNewPhoto.RegisterAsyncTask(_ => picker.TakePhotoAsync(defaultCamera)),
-                    ViewModel.ChooseExistingPhoto.RegisterAsyncTask(_ => picker.PickPhotoAsync()))
-                .Subscribe(x => {
-                    var intent = new Intent(this, typeof(EditActivity));
+            ViewModel.StartEdit.Subscribe(x => {
+                var intent = new Intent(this, typeof(EditActivity));
 
-                    intent.PutExtra("imagePath", x.Path);
-                    StartActivity(intent);
-                });
+                intent.PutExtra("imagePath", (string)x);
+                StartActivity(intent);
+            });
         }
 
         #region Boring copy-paste code I want to die

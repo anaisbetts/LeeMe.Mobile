@@ -27,8 +27,7 @@ namespace LeeMe.Android
             base.OnCreate(bundle);
             RxApp.DeferredScheduler = new AndroidUIScheduler(this);
             
-            ViewModel = new EditViewModel(x => 
-                Observable.Start(() => BitmapFactory.DecodeFile(x), RxApp.TaskpoolScheduler));
+            ViewModel = new EditViewModel();
 
             var targetFile = Intent.GetStringExtra("imagePath");
             if (targetFile == null || !File.Exists(targetFile)) {
