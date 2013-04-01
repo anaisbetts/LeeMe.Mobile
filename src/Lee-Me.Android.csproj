@@ -106,6 +106,8 @@
     <Compile Include="Welcome\WelcomeViewModel.cs" />
     <Compile Include="Edit\Android\EditActivity.cs" />
     <Compile Include="Edit\EditViewModel.cs" />
+    <Compile Include="Support\BitmapInterfaces.cs" />
+    <Compile Include="Support\Android\Bitmap.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -140,5 +142,7 @@
     <Folder Include="Welcome\" />
     <Folder Include="Edit\" />
     <Folder Include="Edit\Android\" />
+    <Folder Include="Support\" />
+    <Folder Include="Support\Android\" />
   </ItemGroup>
 </Project>
