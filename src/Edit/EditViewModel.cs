@@ -3,8 +3,9 @@ using ReactiveUI;
 using ReactiveUI.Xaml;
 using System.Reactive.Linq;
 using System.IO;
+using LeeMe.Support;
 
-namespace LeeMe.Android
+namespace LeeMe.Edit
 {
     public class EditViewModel : ReactiveObject, IDisposable
     {

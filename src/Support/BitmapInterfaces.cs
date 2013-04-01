@@ -1,9 +1,8 @@
 using System;
-using Android.Graphics;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace LeeMe.Android
+namespace LeeMe.Support
 {
     public enum CompressedBitmapFormat {
         Png, Jpeg,

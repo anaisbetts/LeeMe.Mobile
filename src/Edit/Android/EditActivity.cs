@@ -17,8 +17,11 @@ using System.Reactive.Linq;
 using System.IO;
 using ActionbarSherlock.App;
 using System.Reactive.Subjects;
+using LeeMe.Welcome.Android;
+using LeeMe;
+using LeeMe.Support;
 
-namespace LeeMe.Android
+namespace LeeMe.Edit.Android
 {
     public enum SwipeDirection {
         ToRight, ToLeft, ToTop, ToBottom,

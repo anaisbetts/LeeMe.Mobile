@@ -12,8 +12,9 @@ using System.ComponentModel;
 using Xamarin.Media;
 using ReactiveUI.Android;
 using System.Reactive.Linq;
+using LeeMe.Edit.Android;
 
-namespace LeeMe.Android
+namespace LeeMe.Welcome.Android
 {
     [Activity (Label = "Lee-Me.Android", MainLauncher = true)]
     public class WelcomeActivity : SherlockActivity, IViewFor<WelcomeViewModel>, INotifyPropertyChanged

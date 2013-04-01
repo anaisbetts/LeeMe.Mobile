@@ -1,8 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using System.IO;
-using Android.Graphics;
+using MonoTouch.UIKit;
 using System.Threading;
+using MonoTouch.Foundation;
 
 namespace LeeMe.Support
 {
@@ -13,68 +14,73 @@ namespace LeeMe.Support
             get { return _Current; }
             set { _Current = value; }
         }
-
+        
         protected BitmapLoader() { }
-
+        
         public Task<IBitmap> Load(Stream sourceStream)
         {
-            return Task.Run(() => BitmapFactory.DecodeStream(sourceStream).FromNative());
+            return Task.Run(() => {
+                var data = NSData.FromStream(sourceStream);
+                return (IBitmap) new CocoaBitmap(UIImage.LoadFromData(data));
+            });
         }
-
+        
         public IBitmap Create(double width, double height)
         {
-            return Bitmap.CreateBitmap((int)width, (int)height, Bitmap.Config.Argb8888).FromNative();
+            throw new NotImplementedException();
         }
     }
-            
-    sealed class AndroidBitmap : IBitmap
+    
+    sealed class CocoaBitmap : IBitmap
     {
-        internal Bitmap inner;
-        public AndroidBitmap(Bitmap inner)
+        internal UIImage inner;
+        public CocoaBitmap(UIImage inner)
         {
             this.inner = inner;
         }
-                    
+        
         public double Width {
-            get { return inner.Width; }
+            get { return inner.Size.Width; }
         }
-
+        
         public double Height {
-            get { return inner.Height; }
+            get { return inner.Size.Height; }
         }
-
+        
         public int[] GetPixels(double x, double y, double width, double height)
         {
-            var ret = new int[(int)(width * height)];
-            inner.GetPixels(ret, 0, (int)width, (int)x, (int)y, (int)width, (int)height);
-            return ret;
+            throw new NotImplementedException();
         }
-
+        
         public Task Save(CompressedBitmapFormat format, double quality, Stream target)
         {
-            var fmt = format == CompressedBitmapFormat.Jpeg ? Bitmap.CompressFormat.Jpeg : Bitmap.CompressFormat.Png;
-            return Task.Run(() => inner.Compress(fmt, (int)quality * 100, target));
+            return Task.Run(() => {
+                var data = format == CompressedBitmapFormat.Jpeg ? inner.AsJPEG((float)quality) : inner.AsPNG();
+                data.AsStream().CopyTo(target);
+            });
         }
-
+        
         public void Dispose()
         {
             var disp = Interlocked.Exchange(ref inner, null);
             if (disp != null) disp.Dispose();
         }
     }
-
+    
     public static class BitmapMixins
     {
-        public static Bitmap ToNative(this IBitmap This)
+        public static UIImage ToNative(this IBitmap This)
         {
-            return ((AndroidBitmap)This).inner;
+            return ((CocoaBitmap)This).inner;
         }
-
-        public static IBitmap FromNative(this Bitmap This, bool copy = false)
+        
+        public static IBitmap FromNative(this UIImage This, bool copy = false)
         {
-            if (copy) return new AndroidBitmap(This.Copy(This.GetConfig(), true));
-            return new AndroidBitmap(This);
+            if (copy) return new CocoaBitmap((UIImage)This.Copy());
+
+            return new CocoaBitmap(This);
         }
     }
 }
+
 

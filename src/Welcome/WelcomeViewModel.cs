@@ -4,7 +4,7 @@ using ReactiveUI;
 using ReactiveUI.Xaml;
 using Xamarin.Media;
 
-namespace LeeMe.Android
+namespace LeeMe.Welcome
 {
     public class WelcomeViewModel : ReactiveObject
     {
