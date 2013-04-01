@@ -6,7 +6,7 @@ using System.IO;
 
 namespace LeeMe.Android
 {
-    public class EditViewModel : ReactiveObject
+    public class EditViewModel : ReactiveObject, IDisposable
     {
         string _ImagePath;
         public string ImagePath {
@@ -60,7 +60,13 @@ namespace LeeMe.Android
                 .InvokeCommand(LoadImage);
 
             LoadImage.RegisterAsyncTask(x => BitmapLoader.Current.Load(File.OpenRead((string)x)))
+                .Do(_ => { if(LoadedImage != null) LoadedImage.Dispose(); })
                 .ToProperty(this, x => x.LoadedImage);
+        }
+
+        public void Dispose()
+        {
+            LoadedImage.Dispose();
         }
     }
 }
