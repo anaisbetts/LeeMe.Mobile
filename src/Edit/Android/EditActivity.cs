@@ -51,6 +51,10 @@ namespace LeeMe.Android
             // XXX: Debug
             Observable.Timer(DateTimeOffset.MinValue, TimeSpan.FromSeconds(5.0f), RxApp.DeferredScheduler).Subscribe(_ => view.Invalidate());
 
+            // XXX: Debug
+            Observable.Timer(TimeSpan.FromSeconds(2.0), TimeSpan.FromSeconds(4.0), RxApp.DeferredScheduler).Subscribe(_ => ViewModel.OnBottom = !ViewModel.OnBottom);
+            Observable.Timer(TimeSpan.FromSeconds(0.0), TimeSpan.FromSeconds(4.0), RxApp.DeferredScheduler).Subscribe(_ => ViewModel.OnRight = !ViewModel.OnRight);
+
             SetContentView(view);
         }
 
@@ -112,10 +116,27 @@ namespace LeeMe.Android
                     }
                 }
 
-                canvas.DrawBitmap(activity.datLee, 
-                    new Rect(0, 0, width, height),
-                    new Rect(0, (int)imageCanvasHeight - scaledHeight + (int)startTop, canvas.Width / 2, imageCanvasHeight + (int)startTop),
-                    defaultPaint);
+                if (activity.ViewModel.OnBottom && !activity.ViewModel.OnRight) {
+                    canvas.DrawBitmap(activity.datLee, 
+                        new Rect(0, 0, width, height),
+                        new Rect(0, (int)imageCanvasHeight - scaledHeight + (int)startTop, canvas.Width / 2, imageCanvasHeight + (int)startTop),
+                        defaultPaint);
+                } else if (activity.ViewModel.OnBottom && activity.ViewModel.OnRight) {
+                    canvas.DrawBitmap(activity.datLee, 
+                        new Rect(width, 0, 0, height),
+                        new Rect(canvas.Width / 2, (int)imageCanvasHeight - scaledHeight + (int)startTop, canvas.Width, imageCanvasHeight + (int)startTop),
+                        defaultPaint);
+                } else if (!activity.ViewModel.OnBottom && !activity.ViewModel.OnRight) {
+                    canvas.DrawBitmap(activity.datLee, 
+                        new Rect(0, height, width, 0),
+                        new Rect(0, (int)startTop, canvas.Width / 2, scaledHeight + (int)startTop),
+                        defaultPaint);
+                } else if (!activity.ViewModel.OnBottom && activity.ViewModel.OnRight) {
+                    canvas.DrawBitmap(activity.datLee, 
+                        new Rect(width, height, 0, 0),
+                        new Rect(canvas.Width / 2, (int)startTop, canvas.Width, scaledHeight + (int)startTop),
+                        defaultPaint);
+                }
             }
         }
         
