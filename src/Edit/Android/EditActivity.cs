@@ -16,9 +16,14 @@ using Android.Graphics;
 using System.Reactive.Linq;
 using System.IO;
 using ActionbarSherlock.App;
+using System.Reactive.Subjects;
 
 namespace LeeMe.Android
 {
+    public enum SwipeDirection {
+        ToRight, ToLeft, ToTop, ToBottom,
+    }
+
     [Activity (Label = "EditActivity")]            
     public class EditActivity : SherlockActivity, IViewFor<EditViewModel>, INotifyPropertyChanged
     {
@@ -61,10 +66,36 @@ namespace LeeMe.Android
         class EditView : View
         {
             readonly EditActivity activity;
+            readonly GestureDetector detector;
 
             public EditView(EditActivity activity) : base(activity)
             {
                 this.activity = activity;
+
+                var obsListener = new ObservableGestureDetector();
+                detector = new GestureDetector(obsListener);
+
+                obsListener.SwipeGesture.Subscribe(x => {
+                    switch(x) {
+                    case SwipeDirection.ToBottom:
+                        activity.ViewModel.OnBottom = true;
+                        break;
+                    case SwipeDirection.ToTop:
+                        activity.ViewModel.OnBottom = false;
+                        break;
+                    case SwipeDirection.ToRight:
+                        activity.ViewModel.OnRight = true;
+                        break;
+                    case SwipeDirection.ToLeft:
+                        activity.ViewModel.OnRight = false;
+                        break;
+                    }
+                });
+            }
+
+            public override bool OnTouchEvent(MotionEvent e)
+            {
+                return detector.OnTouchEvent(e);
             }
 
             Paint defaultPaint = new Paint();
@@ -138,6 +169,39 @@ namespace LeeMe.Android
                         defaultPaint);
                 }
             }
+        }
+
+        class ObservableGestureDetector : GestureDetector.SimpleOnGestureListener
+        {
+            const int SWIPE_MIN_DISTANCE = 120;
+            const int SWIPE_MAX_OFF_PATH = 100;
+            const int SWIPE_THRESHOLD_VELOCITY = 200;
+
+            public override bool OnFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
+            {
+                var deltaX = e2.GetX() - e1.GetY();
+                var deltaY = e2.GetY() - e1.GetY();
+                var absX = Math.Abs(deltaX);
+                var absY = Math.Abs(deltaY);
+
+                // Diagonal or too short
+                if (Math.Abs(absY - absX) <= SWIPE_MAX_OFF_PATH) {
+                    return false;
+                }
+
+                if (absX > absY && absX > SWIPE_MIN_DISTANCE && Math.Abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                    _SwipeGesture.OnNext(deltaX > 0 ? SwipeDirection.ToRight : SwipeDirection.ToLeft);
+                } 
+
+                if (absX < absY && absY > SWIPE_MIN_DISTANCE && Math.Abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                    _SwipeGesture.OnNext(deltaY > 0 ? SwipeDirection.ToBottom : SwipeDirection.ToTop);
+                }
+
+                return false;
+            }
+
+            readonly Subject<SwipeDirection> _SwipeGesture = new Subject<SwipeDirection>();
+            public IObservable<SwipeDirection> SwipeGesture { get { return _SwipeGesture; } }
         }
         
         #region Boring copy-paste code I want to die
