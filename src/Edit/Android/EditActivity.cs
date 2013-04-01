@@ -52,8 +52,8 @@ namespace LeeMe.Android
             Observable.Timer(DateTimeOffset.MinValue, TimeSpan.FromSeconds(5.0f), RxApp.DeferredScheduler).Subscribe(_ => view.Invalidate());
 
             // XXX: Debug
-            Observable.Timer(TimeSpan.FromSeconds(2.0), TimeSpan.FromSeconds(4.0), RxApp.DeferredScheduler).Subscribe(_ => ViewModel.OnBottom = !ViewModel.OnBottom);
-            Observable.Timer(TimeSpan.FromSeconds(0.0), TimeSpan.FromSeconds(4.0), RxApp.DeferredScheduler).Subscribe(_ => ViewModel.OnRight = !ViewModel.OnRight);
+            //Observable.Timer(TimeSpan.FromSeconds(2.0), TimeSpan.FromSeconds(4.0), RxApp.DeferredScheduler).Subscribe(_ => ViewModel.OnBottom = !ViewModel.OnBottom);
+            //Observable.Timer(TimeSpan.FromSeconds(0.0), TimeSpan.FromSeconds(4.0), RxApp.DeferredScheduler).Subscribe(_ => ViewModel.OnRight = !ViewModel.OnRight);
 
             SetContentView(view);
         }
@@ -95,10 +95,10 @@ namespace LeeMe.Android
                     var imgHeight = img.GetScaledHeight(canvas);
                     var imgWidth = img.GetScaledWidth(canvas);
 
-                    var longSide = Math.Max(imgHeight, imgWidth);
-                    var imgScaleFactor = canvas.Width / longSide;
-                    var scaledImgHeight = imgHeight * imgScaleFactor;
-                    var scaledImgWidth = imgWidth * imgScaleFactor;
+                    float longSide = Math.Max(imgHeight, imgWidth);
+                    float imgScaleFactor = (float)canvas.Width / longSide;
+                    float scaledImgHeight = imgHeight * imgScaleFactor;
+                    float scaledImgWidth = imgWidth * imgScaleFactor;
 
                     if (imgHeight > imgWidth) {
                         var imgLeft = (canvas.Width - scaledImgWidth) / 2.0f;
@@ -111,7 +111,7 @@ namespace LeeMe.Android
 
                         canvas.DrawBitmap(img,
                             new Rect(0, 0, imgWidth, imgHeight),
-                            new Rect(0, (int)imgTop + (int)startTop, canvas.Width, (int)imgTop + scaledImgHeight + (int)startTop),
+                            new Rect(0, (int)imgTop + (int)startTop, canvas.Width, (int)imgTop + (int)scaledImgHeight + (int)startTop),
                             defaultPaint);
                     }
                 }
