@@ -21,6 +21,36 @@ namespace LeeMe.Android
             get { return _LoadedImage.Value; }
         }
 
+        bool _OnBottom = true;
+        public bool OnBottom {
+            get { return _OnBottom; }
+            set { this.RaiseAndSetIfChanged(ref _OnBottom, value); }
+        }
+
+        bool _OnRight = false;
+        public bool OnRight {
+            get { return _OnRight; }
+            set { this.RaiseAndSetIfChanged(ref _OnRight, value); }
+        }
+
+        double _ZoomLevel;
+        public double ZoomLevel {
+            get { return _ZoomLevel; }
+            set { this.RaiseAndSetIfChanged(ref _ZoomLevel, value); }
+        }
+
+        double _TranslateX;
+        public double TranslateX {
+            get { return _TranslateX; }
+            set { this.RaiseAndSetIfChanged(ref _TranslateX, value); }
+        }
+
+        double _TranslateY;
+        public double TranslateY {
+            get { return _TranslateY; }
+            set { this.RaiseAndSetIfChanged(ref _TranslateY, value); }
+        }
+
         public EditViewModel()
         {
             LoadImage = new ReactiveAsyncCommand();
