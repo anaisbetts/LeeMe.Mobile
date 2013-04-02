@@ -20,6 +20,7 @@ using System.Reactive.Subjects;
 using LeeMe.Welcome.Android;
 using LeeMe;
 using LeeMe.Support;
+using ActionbarSherlock.View;
 
 namespace LeeMe.Edit.Android
 {
@@ -87,6 +88,21 @@ namespace LeeMe.Edit.Android
             SetContentView(view);
         }
 
+        public override bool OnCreateOptionsMenu(ActionbarSherlock.View.IMenu menu)
+        {
+            SupportMenuInflater.Inflate(Resource.Menu.share_action_provider, menu);
+            var item = (ActionbarSherlock.View.IMenuItem)menu.FindItem(Resource.Id.menu_item_share_action_provider_action_bar);
+            var actionProvider = (ActionbarSherlock.Widget.ShareActionProvider)item.ActionProvider;
+            actionProvider.SetShareHistoryFileName(ShareActionProvider.DefaultShareHistoryFileName);
+
+            var dummyIntent = new Intent(Intent.ActionSend);
+            dummyIntent.SetType("image/*");
+            dummyIntent.PutExtra(Intent.ExtraStream, new Uri("file:///foo").ToString());
+            actionProvider.SetShareIntent(dummyIntent);
+
+            return true;
+        }
+
         public override bool OnTouchEvent(MotionEvent e)
         {
             return detector.OnTouchEvent(e);
@@ -99,8 +115,6 @@ namespace LeeMe.Edit.Android
             public EditView(EditActivity activity) : base(activity)
             {
                 this.activity = activity;
-
-
             }
 
             Paint defaultPaint = new Paint();

@@ -975,6 +975,9 @@ namespace LeeMe
 			// aapt resource value: 0x7f040002
 			public const int listMode = 2130968578;
 			
+			// aapt resource value: 0x7f040037
+			public const int menu_item_share_action_provider_action_bar = 2130968631;
+			
 			// aapt resource value: 0x7f040001
 			public const int normal = 2130968577;
 			
@@ -1112,6 +1115,22 @@ namespace LeeMe
 			}
 			
 			private Layout()
+			{
+			}
+		}
+		
+		public partial class Menu
+		{
+			
+			// aapt resource value: 0x7f0b0000
+			public const int share_action_provider = 2131427328;
+			
+			static Menu()
+			{
+				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
+			}
+			
+			private Menu()
 			{
 			}
 		}

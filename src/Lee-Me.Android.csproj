@@ -119,6 +119,7 @@
     <AndroidResource Include="Resources\drawable\Icon.png" />
     <AndroidResource Include="Resources\layout\Welcome.axml" />
     <AndroidResource Include="Resources\drawable\lee.png" />
+    <AndroidResource Include="Resources\menu\share_action_provider.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <ItemGroup>
@@ -144,5 +145,6 @@
     <Folder Include="Edit\Android\" />
     <Folder Include="Support\" />
     <Folder Include="Support\Android\" />
+    <Folder Include="Resources\menu\" />
   </ItemGroup>
 </Project>
