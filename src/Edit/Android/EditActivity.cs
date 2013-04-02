@@ -31,6 +31,7 @@ namespace LeeMe.Edit.Android
     public class EditActivity : SherlockActivity, IViewFor<EditViewModel>, INotifyPropertyChanged
     {
         Bitmap datLee;
+        GestureDetector detector;
         
         protected override void OnCreate(Bundle bundle)
         {
@@ -63,42 +64,43 @@ namespace LeeMe.Edit.Android
             //Observable.Timer(TimeSpan.FromSeconds(2.0), TimeSpan.FromSeconds(4.0), RxApp.DeferredScheduler).Subscribe(_ => ViewModel.OnBottom = !ViewModel.OnBottom);
             //Observable.Timer(TimeSpan.FromSeconds(0.0), TimeSpan.FromSeconds(4.0), RxApp.DeferredScheduler).Subscribe(_ => ViewModel.OnRight = !ViewModel.OnRight);
 
+            var obsListener = new ObservableGestureDetector();
+            detector = new GestureDetector(obsListener);
+
+            obsListener.SwipeGesture.Subscribe(x => {
+                switch(x) {
+                case SwipeDirection.ToBottom:
+                    ViewModel.OnBottom = true;
+                    break;
+                case SwipeDirection.ToTop:
+                    ViewModel.OnBottom = false;
+                    break;
+                case SwipeDirection.ToRight:
+                    ViewModel.OnRight = true;
+                    break;
+                case SwipeDirection.ToLeft:
+                    ViewModel.OnRight = false;
+                    break;
+                }
+            });
+
             SetContentView(view);
+        }
+
+        public override bool OnTouchEvent(MotionEvent e)
+        {
+            return detector.OnTouchEvent(e);
         }
 
         class EditView : View
         {
             readonly EditActivity activity;
-            readonly GestureDetector detector;
 
             public EditView(EditActivity activity) : base(activity)
             {
                 this.activity = activity;
 
-                var obsListener = new ObservableGestureDetector();
-                detector = new GestureDetector(obsListener);
 
-                obsListener.SwipeGesture.Subscribe(x => {
-                    switch(x) {
-                    case SwipeDirection.ToBottom:
-                        activity.ViewModel.OnBottom = true;
-                        break;
-                    case SwipeDirection.ToTop:
-                        activity.ViewModel.OnBottom = false;
-                        break;
-                    case SwipeDirection.ToRight:
-                        activity.ViewModel.OnRight = true;
-                        break;
-                    case SwipeDirection.ToLeft:
-                        activity.ViewModel.OnRight = false;
-                        break;
-                    }
-                });
-            }
-
-            public override bool OnTouchEvent(MotionEvent e)
-            {
-                return detector.OnTouchEvent(e);
             }
 
             Paint defaultPaint = new Paint();
@@ -182,7 +184,7 @@ namespace LeeMe.Edit.Android
 
             public override bool OnFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
             {
-                var deltaX = e2.GetX() - e1.GetY();
+                var deltaX = e2.GetX() - e1.GetX();
                 var deltaY = e2.GetY() - e1.GetY();
                 var absX = Math.Abs(deltaX);
                 var absY = Math.Abs(deltaY);
