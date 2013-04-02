@@ -4,6 +4,7 @@ using System.Linq;
 
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
+using LeeMe.Welcome.iOS;
 
 namespace LeeMe.Support.iOS
 {
@@ -15,7 +16,7 @@ namespace LeeMe.Support.iOS
     {
         // class-level declarations
         UIWindow window;
-        UIViewController mainViewController;
+        UINavigationController mainViewController;
 
         
         //
@@ -27,9 +28,19 @@ namespace LeeMe.Support.iOS
         //
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
+            // NB: Hax
+            (new ReactiveUI.Xaml.ServiceLocationRegistration()).Register();
+            (new ReactiveUI.Routing.ServiceLocationRegistration()).Register();
+            (new ReactiveUI.Cocoa.ServiceLocationRegistration()).Register();
+            (new ReactiveUI.Mobile.ServiceLocationRegistration()).Register();
+            (new Akavache.Mobile.ServiceLocationRegistration()).Register();
+            (new Akavache.Sqlite3.ServiceLocationRegistration()).Register();
+
             // create a new window instance based on the screen size
             window = new UIWindow(UIScreen.MainScreen.Bounds);
-            //mainViewController = new MainViewController();
+            mainViewController = new UINavigationController();
+            mainViewController.PushViewController(new WelcomeViewController(), true);
+
             window.RootViewController = mainViewController;
             window.MakeKeyAndVisible();
             
