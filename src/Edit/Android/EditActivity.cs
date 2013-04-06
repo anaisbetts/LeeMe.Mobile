@@ -21,6 +21,9 @@ using LeeMe.Welcome.Android;
 using LeeMe;
 using LeeMe.Support;
 using ActionbarSherlock.View;
+using System.Drawing;
+using Android.Util;
+using System.Reactive.Concurrency;
 
 namespace LeeMe.Edit.Android
 {
@@ -52,6 +55,7 @@ namespace LeeMe.Edit.Android
             SupportActionBar.SetIcon(Resource.Drawable.Icon);
 
             datLee = BitmapFactory.DecodeResource(Resources, Resource.Drawable.lee);
+            ViewModel.DatImg = datLee.FromNative();
 
             ViewModel.LoadImage.Execute(targetFile);
 
@@ -59,7 +63,7 @@ namespace LeeMe.Edit.Android
             ViewModel.Changed.Subscribe(_ => view.Invalidate());
 
             // XXX: Debug
-            Observable.Timer(DateTimeOffset.MinValue, TimeSpan.FromSeconds(5.0f), RxApp.DeferredScheduler).Subscribe(_ => view.Invalidate());
+            //Observable.Timer(DateTimeOffset.MinValue, TimeSpan.FromSeconds(5.0f), RxApp.DeferredScheduler).Subscribe(_ => view.Invalidate());
 
             // XXX: Debug
             //Observable.Timer(TimeSpan.FromSeconds(2.0), TimeSpan.FromSeconds(4.0), RxApp.DeferredScheduler).Subscribe(_ => ViewModel.OnBottom = !ViewModel.OnBottom);
@@ -117,75 +121,35 @@ namespace LeeMe.Edit.Android
                 this.activity = activity;
             }
 
+            protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
+            {
+                base.OnSizeChanged(w, h, oldw, oldh);
+                var newRect = new RectangleF(0.0f, 0.0f, (float)w, (float)h);
+
+                activity.ViewModel.ScreenRect = newRect;
+
+                var metrics = new DisplayMetrics();
+                activity.WindowManager.DefaultDisplay.GetMetrics(metrics);
+                activity.ViewModel.DensityFactor = metrics.Density;
+            }
+
             Paint defaultPaint = new Paint();
             protected override void OnDraw(Canvas canvas)
             {
                 base.OnDraw(canvas);
+                var vm = activity.ViewModel;
 
-                // NB: This code is all written for portrait, landscape is fucked
-                // The general idea here is we want to define a square centered on
-                // the screen whose size is the canvas short axis (i.e. the width
-                // in portrait). Then, we're gonna scale everything to fit in that
-                // box
+                if (vm.LoadedImage == null || vm.ImageDestRect.Width < 1.0f) return;
 
-                var imageCanvasHeight = canvas.Width;   // Square, remember?
-                var startTop = (canvas.Height - imageCanvasHeight) / 2.0f;
+                var img = vm.LoadedImage.ToNative();
+                var srcRect = new Rect(0, 0, img.GetScaledWidth(canvas), img.GetScaledHeight(canvas));
+                canvas.DrawBitmap(vm.LoadedImage.ToNative(), 
+                    srcRect,
+                    vm.ImageDestRect.ToRect(), 
+                    defaultPaint);
 
-                var width = activity.datLee.GetScaledWidth(canvas);
-                var height = activity.datLee.GetScaledHeight(canvas);
-                var scaleFactor = (canvas.Width / 2.0) / (double)width;
-                int scaledHeight = (int)(height * scaleFactor);
-
-                // XXX: Debug
-                canvas.DrawRect(new Rect(0, (int)startTop, imageCanvasHeight, imageCanvasHeight + (int)startTop),
-                                new Paint() { Color = Color.AliceBlue, StrokeWidth = 2 });
-
-                if (activity.ViewModel.LoadedImage != null) {
-                    var img = activity.ViewModel.LoadedImage.ToNative();
-                    var imgHeight = img.GetScaledHeight(canvas);
-                    var imgWidth = img.GetScaledWidth(canvas);
-
-                    float longSide = Math.Max(imgHeight, imgWidth);
-                    float imgScaleFactor = (float)canvas.Width / longSide;
-                    float scaledImgHeight = imgHeight * imgScaleFactor;
-                    float scaledImgWidth = imgWidth * imgScaleFactor;
-
-                    if (imgHeight > imgWidth) {
-                        var imgLeft = (canvas.Width - scaledImgWidth) / 2.0f;
-                        canvas.DrawBitmap(img,
-                            new Rect(0, 0, imgWidth, imgHeight),
-                            new Rect((int)imgLeft, (int)startTop, (int)(imgLeft + scaledImgWidth), (int)startTop + imageCanvasHeight),
-                            defaultPaint);
-                    } else {
-                        var imgTop = (imageCanvasHeight - scaledImgHeight) / 2.0f;
-
-                        canvas.DrawBitmap(img,
-                            new Rect(0, 0, imgWidth, imgHeight),
-                            new Rect(0, (int)imgTop + (int)startTop, canvas.Width, (int)imgTop + (int)scaledImgHeight + (int)startTop),
-                            defaultPaint);
-                    }
-                }
-
-                if (activity.ViewModel.OnBottom && !activity.ViewModel.OnRight) {
-                    canvas.DrawBitmap(activity.datLee, 
-                        new Rect(0, 0, width, height),
-                        new Rect(0, (int)imageCanvasHeight - scaledHeight + (int)startTop, canvas.Width / 2, imageCanvasHeight + (int)startTop),
-                        defaultPaint);
-                } else if (activity.ViewModel.OnBottom && activity.ViewModel.OnRight) {
-                    canvas.DrawBitmap(activity.datLee, 
-                        new Rect(width, 0, 0, height),
-                        new Rect(canvas.Width / 2, (int)imageCanvasHeight - scaledHeight + (int)startTop, canvas.Width, imageCanvasHeight + (int)startTop),
-                        defaultPaint);
-                } else if (!activity.ViewModel.OnBottom && !activity.ViewModel.OnRight) {
-                    canvas.DrawBitmap(activity.datLee, 
-                        new Rect(0, height, width, 0),
-                        new Rect(0, (int)startTop, canvas.Width / 2, scaledHeight + (int)startTop),
-                        defaultPaint);
-                } else if (!activity.ViewModel.OnBottom && activity.ViewModel.OnRight) {
-                    canvas.DrawBitmap(activity.datLee, 
-                        new Rect(width, height, 0, 0),
-                        new Rect(canvas.Width / 2, (int)startTop, canvas.Width, scaledHeight + (int)startTop),
-                        defaultPaint);
+                if (vm.HuffmanDestRect.Width > 1.0f) {
+                    canvas.DrawBitmap(activity.datLee, vm.HuffmanSrcRect.ToRect(), vm.HuffmanDestRect.ToRect(), defaultPaint);
                 }
             }
         }
@@ -241,6 +205,19 @@ namespace LeeMe.Edit.Android
         
         public event PropertyChangedEventHandler PropertyChanged;
         #endregion
+    }
+
+    public static class AndroidRectMixins
+    {
+        public static Rect ToRect(this RectangleF This)
+        {
+            return new Rect((int)This.Left, (int)This.Top, (int)This.Right, (int)This.Bottom);
+        }
+        public static RectF ToRectF(this RectangleF This)
+        {
+            var ret = new RectF(This.Left, This.Top, This.Right, This.Bottom);
+            return ret;
+        }
     }
 }
 
