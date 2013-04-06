@@ -21,7 +21,7 @@ namespace LeeMe.Support
             return Task.Run(() => BitmapFactory.DecodeStream(sourceStream).FromNative());
         }
 
-        public IBitmap Create(double width, double height)
+        public IBitmap Create(float width, float height)
         {
             return Bitmap.CreateBitmap((int)width, (int)height, Bitmap.Config.Argb8888).FromNative();
         }
@@ -35,22 +35,22 @@ namespace LeeMe.Support
             this.inner = inner;
         }
                     
-        public double Width {
+        public float Width {
             get { return inner.Width; }
         }
 
-        public double Height {
+        public float Height {
             get { return inner.Height; }
         }
 
-        public int[] GetPixels(double x, double y, double width, double height)
+        public int[] GetPixels(float x, float y, float width, float height)
         {
             var ret = new int[(int)(width * height)];
             inner.GetPixels(ret, 0, (int)width, (int)x, (int)y, (int)width, (int)height);
             return ret;
         }
 
-        public Task Save(CompressedBitmapFormat format, double quality, Stream target)
+        public Task Save(CompressedBitmapFormat format, float quality, Stream target)
         {
             var fmt = format == CompressedBitmapFormat.Jpeg ? Bitmap.CompressFormat.Jpeg : Bitmap.CompressFormat.Png;
             return Task.Run(() => inner.Compress(fmt, (int)quality * 100, target));

@@ -25,7 +25,7 @@ namespace LeeMe.Support
             });
         }
         
-        public IBitmap Create(double width, double height)
+        public IBitmap Create(float width, float height)
         {
             throw new NotImplementedException();
         }
@@ -39,20 +39,20 @@ namespace LeeMe.Support
             this.inner = inner;
         }
         
-        public double Width {
+        public float Width {
             get { return inner.Size.Width; }
         }
         
-        public double Height {
+        public float Height {
             get { return inner.Size.Height; }
         }
         
-        public int[] GetPixels(double x, double y, double width, double height)
+        public int[] GetPixels(float x, float y, float width, float height)
         {
             throw new NotImplementedException();
         }
         
-        public Task Save(CompressedBitmapFormat format, double quality, Stream target)
+        public Task Save(CompressedBitmapFormat format, float quality, Stream target)
         {
             return Task.Run(() => {
                 var data = format == CompressedBitmapFormat.Jpeg ? inner.AsJPEG((float)quality) : inner.AsPNG();

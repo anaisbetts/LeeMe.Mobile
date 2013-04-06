@@ -11,15 +11,15 @@ namespace LeeMe.Support
     public interface IBitmapLoader
     {
         Task<IBitmap> Load(Stream sourceStream);
-        IBitmap Create(double width, double height);
+        IBitmap Create(float width, float height);
     }
 
     public interface IBitmap : IDisposable
     {
-        double Width { get; }
-        double Height { get; }
-        int[] GetPixels(double x, double y, double width, double height);
-        Task Save(CompressedBitmapFormat format, double quality, Stream target);
+        float Width { get; }
+        float Height { get; }
+        int[] GetPixels(float x, float y, float width, float height);
+        Task Save(CompressedBitmapFormat format, float quality, Stream target);
     }
 }
 
