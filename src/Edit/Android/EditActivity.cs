@@ -11,6 +11,7 @@ using Android.Views;
 using Android.Widget;
 using System.ComponentModel;
 using ReactiveUI;
+using ReactiveUI.Xaml;
 using ReactiveUI.Android;
 using Android.Graphics;
 using System.Reactive.Linq;
@@ -24,6 +25,9 @@ using ActionbarSherlock.View;
 using System.Drawing;
 using Android.Util;
 using System.Reactive.Concurrency;
+using System.Reactive;
+
+using AndroidUri = Android.Net.Uri;
 
 namespace LeeMe.Edit.Android
 {
@@ -36,7 +40,7 @@ namespace LeeMe.Edit.Android
     {
         Bitmap datLee;
         GestureDetector detector;
-        
+
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
@@ -61,6 +65,29 @@ namespace LeeMe.Edit.Android
 
             var view = new EditView(this);
             ViewModel.Changed.Subscribe(_ => view.Invalidate());
+
+            ViewModel.ShareImage.Subscribe(x => {
+                var intent = (Intent)x;
+
+                // NB: We have to do this all sync. Cray.
+                var target = ViewModel.LoadedImage.ToNative().Copy(Bitmap.Config.Argb8888, true);
+                var frame = target.FromNative();
+                var canvas = new Canvas(target);
+                var defaultPaint = new Paint();
+
+                var rects = ViewModel.CalculateHuffmanRects(
+                    new RectangleF(0.0f, 0.0f, frame.Width, frame.Height), ViewModel.DatImg, 1.0f, ViewModel.OnBottom, ViewModel.OnRight);
+
+                canvas.DrawBitmap(ViewModel.LoadedImage.ToNative(), 0.0f, 0.0f, defaultPaint);
+                canvas.DrawBitmap(ViewModel.DatImg.ToNative(), rects.Item1.ToRect(), rects.Item2.ToRect(), defaultPaint);
+
+                var path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "share.jpg");
+                using (var outFile = File.Open(path, FileMode.Create)) {
+                    target.FromNative().Save(CompressedBitmapFormat.Jpeg, 0.5f, outFile).Wait();
+                    intent.SetType("image/*");
+                    intent.PutExtra(Intent.ExtraStream, AndroidUri.Parse("file://" + path));
+                }
+            });
 
             // XXX: Debug
             //Observable.Timer(DateTimeOffset.MinValue, TimeSpan.FromSeconds(5.0f), RxApp.DeferredScheduler).Subscribe(_ => view.Invalidate());
@@ -95,13 +122,17 @@ namespace LeeMe.Edit.Android
         public override bool OnCreateOptionsMenu(ActionbarSherlock.View.IMenu menu)
         {
             SupportMenuInflater.Inflate(Resource.Menu.share_action_provider, menu);
+
             var item = (ActionbarSherlock.View.IMenuItem)menu.FindItem(Resource.Id.menu_item_share_action_provider_action_bar);
             var actionProvider = (ActionbarSherlock.Widget.ShareActionProvider)item.ActionProvider;
             actionProvider.SetShareHistoryFileName(ShareActionProvider.DefaultShareHistoryFileName);
 
+            var obsListener = new ObservableShareListener();
+            actionProvider.SetOnShareTargetSelectedListener(obsListener);
+            obsListener.ShareTargetSelected.InvokeCommand(ViewModel.ShareImage);
+
             var dummyIntent = new Intent(Intent.ActionSend);
             dummyIntent.SetType("image/*");
-            dummyIntent.PutExtra(Intent.ExtraStream, new Uri("file:///foo").ToString());
             actionProvider.SetShareIntent(dummyIntent);
 
             return true;
@@ -185,6 +216,22 @@ namespace LeeMe.Edit.Android
 
             readonly Subject<SwipeDirection> _SwipeGesture = new Subject<SwipeDirection>();
             public IObservable<SwipeDirection> SwipeGesture { get { return _SwipeGesture; } }
+        }
+
+        class ObservableShareListener : Java.Lang.Object, ActionbarSherlock.Widget.ShareActionProvider.IOnShareTargetSelectedListener
+        {
+            public Subject<Intent> ShareTargetSelected { get; protected set; }
+
+            public ObservableShareListener()
+            {
+                ShareTargetSelected = new Subject<Intent>();
+            }
+
+            public bool OnShareTargetSelected(ActionbarSherlock.Widget.ShareActionProvider p0, Intent p1)
+            {
+                ShareTargetSelected.OnNext(p1);
+                return false;
+            }
         }
         
         #region Boring copy-paste code I want to die

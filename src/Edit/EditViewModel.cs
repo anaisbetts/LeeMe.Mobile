@@ -24,6 +24,8 @@ namespace LeeMe.Edit
 
         public ReactiveAsyncCommand LoadImage { get; protected set; }
 
+        public ReactiveCommand ShareImage { get; protected set; }
+
         ObservableAsPropertyHelper<IBitmap> _LoadedImage;
         public IBitmap LoadedImage {
             get { return _LoadedImage.Value; }
@@ -89,6 +91,7 @@ namespace LeeMe.Edit
         public EditViewModel()
         {
             LoadImage = new ReactiveAsyncCommand();
+            ShareImage = new ReactiveCommand();
 
             this.WhenAny(x => x.ImagePath, x => x.Value)
                 .Where(x => !String.IsNullOrWhiteSpace(x) && File.Exists(x))
@@ -98,11 +101,8 @@ namespace LeeMe.Edit
                 .Do(_ => { if(LoadedImage != null) LoadedImage.Dispose(); })
                 .ToProperty(this, x => x.LoadedImage);
 
-            //var huffRects = this.Changed
-             //   .Where(x => !x.PropertyName.Contains("Rect"))
-              //  .Select(_ => calculateHuffmanRects(ScreenRect, DatImg, DensityFactor, OnBottom, OnRight));
             var huffRects = this.WhenAny(x => x.ScreenRect, x => x.DatImg, x => x.DensityFactor, x => x.OnBottom, x => x.OnRight, 
-                (screen, img, density, bottom, right) => calculateHuffmanRects(screen.Value, img.Value, density.Value, bottom.Value, right.Value));
+                (screen, img, density, bottom, right) => CalculateHuffmanRects(screen.Value, img.Value, density.Value, bottom.Value, right.Value));
 
             huffRects.Select(x => x.Item1).ToProperty(this, x => x.HuffmanSrcRect);
             huffRects.Select(x => x.Item2).ToProperty(this, x => x.HuffmanDestRect);
@@ -110,15 +110,10 @@ namespace LeeMe.Edit
             this.WhenAny(x => x.ScreenRect, x => x.LoadedImage, x => x.DensityFactor, 
                 (frame, img, density) => calculateImageRect(frame.Value, img.Value, density.Value))
                 .ToProperty(this, x => x.ImageDestRect);
-            /*
-            this.Changed
-                .Where(x => !x.PropertyName.Contains("Rect"))
-                .Select(_ => calculateImageRect(ScreenRect, LoadedImage, DensityFactor))
-                .ToProperty(this, x => x.ImageDestRect);
-*/
+
         }
 
-        Tuple<RectangleF, RectangleF> calculateHuffmanRects(RectangleF frameRect, IBitmap datImg, float density, bool onBottom, bool onRight)
+        public Tuple<RectangleF, RectangleF> CalculateHuffmanRects(RectangleF frameRect, IBitmap datImg, float density, bool onBottom, bool onRight)
         {
             if (datImg == null || frameRect.Width < 1.0f || frameRect.Height < 1.0f) {
                 return Tuple.Create(
