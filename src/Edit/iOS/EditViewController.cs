@@ -6,24 +6,19 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using System.ComponentModel;
 using ReactiveUI;
-using ReactiveUI.Xaml;
-using Xamarin.Media;
-using LeeMe.Edit;
-using LeeMe.Edit.iOS;
 
-namespace LeeMe.Welcome.iOS
+namespace LeeMe.Edit.iOS
 {
-    public partial class WelcomeViewController : UIViewController, IViewFor<WelcomeViewModel>, INotifyPropertyChanged
+    public partial class EditViewController : UIViewController, IViewFor<EditViewModel>
     {
         static bool UserInterfaceIdiomIsPhone
         {
             get { return UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone; }
         }
 
-        public WelcomeViewController()
-            : base (UserInterfaceIdiomIsPhone ? "WelcomeViewController_iPhone" : "WelcomeViewController_iPad", null)
+        public EditViewController()
+            : base (UserInterfaceIdiomIsPhone ? "EditViewController_iPhone" : "EditViewController_iPad", null)
         {
-            ViewModel = new WelcomeViewModel(new MediaPicker());
         }
         
         public override void DidReceiveMemoryWarning()
@@ -37,22 +32,13 @@ namespace LeeMe.Welcome.iOS
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
-
-            var img = UIImage.FromBundle("drawable/lee.png");
-            huffman.Image = img;
-
-            this.BindCommand(ViewModel, x => x.TakeNewPhoto, x => x.takeNewPhoto);
-            this.BindCommand(ViewModel, x => x.ChooseExistingPhoto, x => x.chooseExistingPhoto);
-
-            this.ViewModel.StartEdit.Subscribe(x => {
-                var vm = new EditViewModel() { ImagePath = (string)x };
-                NavigationController.PushViewController(new EditViewController() { ViewModel = vm }, true);
-            });
+            
+            // Perform any additional setup after loading the view, typically from a nib.
         }
-        
+
         #region Boring copy-paste code I want to die
-        WelcomeViewModel _ViewModel;
-        public WelcomeViewModel ViewModel {
+        EditViewModel _ViewModel;
+        public EditViewModel ViewModel {
             get { return _ViewModel; }
             set {
                 if (_ViewModel == value) return;
@@ -63,7 +49,7 @@ namespace LeeMe.Welcome.iOS
         
         object IViewFor.ViewModel {
             get { return ViewModel; }
-            set { ViewModel = (WelcomeViewModel)value; }
+            set { ViewModel = (EditViewModel)value; }
         }
         
         public event PropertyChangedEventHandler PropertyChanged;

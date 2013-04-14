@@ -137,6 +137,7 @@
     <Folder Include="Support\" />
     <Folder Include="Resources\drawable\" />
     <Folder Include="Welcome\iOS\" />
+    <Folder Include="Edit\iOS\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -153,6 +154,10 @@
     <Compile Include="Welcome\iOS\WelcomeViewController.cs" />
     <Compile Include="Welcome\iOS\WelcomeViewController.designer.cs">
       <DependentUpon>WelcomeViewController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Edit\iOS\EditViewController.cs" />
+    <Compile Include="Edit\iOS\EditViewController.designer.cs">
+      <DependentUpon>EditViewController.cs</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -179,5 +184,7 @@
   <ItemGroup>
     <InterfaceDefinition Include="Welcome\iOS\WelcomeViewController_iPhone.xib" />
     <InterfaceDefinition Include="Welcome\iOS\WelcomeViewController_iPad.xib" />
+    <InterfaceDefinition Include="Edit\iOS\EditViewController_iPhone.xib" />
+    <InterfaceDefinition Include="Edit\iOS\EditViewController_iPad.xib" />
   </ItemGroup>
 </Project>
